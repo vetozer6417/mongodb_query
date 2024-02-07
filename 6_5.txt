@@ -1,0 +1,74 @@
+[
+  {
+    $lookup: {
+      from: "CUSTOMER",
+      localField: "customer_id",
+      foreignField: "customer_id",
+      as: "results",
+    },
+  },
+  {
+    $group:
+      /**
+       * _id: The id of the group.
+       * fieldN: The first field name.
+       */
+      {
+        _id: "$customer_id",
+        order_count: {
+          $sum: 1,
+        },
+      },
+  },
+  {
+    $lookup:
+      /**
+       * from: The target collection.
+       * localField: The local join field.
+       * foreignField: The target join field.
+       * as: The name for the results.
+       * pipeline: Optional pipeline to run on the foreign collection.
+       * let: Optional variables to use in the pipeline field stages.
+       */
+      {
+        from: "CUSTOMER",
+        localField: "_id",
+        foreignField: "customer_id",
+        as: "result",
+      },
+  },
+  {
+    $unwind:
+      /**
+       * path: Path to the array field.
+       * includeArrayIndex: Optional name for index.
+       * preserveNullAndEmptyArrays: Optional
+       *   toggle to unwind null and empty values.
+       */
+      {
+        path: "$result",
+      },
+  },
+  {
+    $project:
+      /**
+       * specifications: The fields to
+       *   include or exclude.
+       */
+      {
+        customer_id: "$_id",
+        customer_name: "$result.customer_name",
+        order_count: "$order_count",
+        _id: 0,
+      },
+  },
+  {
+    $sort:
+      /**
+       * Provide any number of field/order pairs.
+       */
+      {
+        order_count: -1,
+      },
+  },
+]

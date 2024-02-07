@@ -1,0 +1,65 @@
+[
+  {
+    $match:
+      /**
+       * query: The query in MQL.
+       */
+      {
+        order_date: {
+          $gte: "2020-01-10",
+          $lte: "2020-01-15",
+        },
+      },
+  },
+  {
+    $lookup: {
+      from: "CUSTOMER",
+      localField: "customer_id",
+      foreignField: "customer_id",
+      as: "joined",
+    },
+  },
+  {
+    $unwind:
+      /**
+       * path: Path to the array field.
+       * includeArrayIndex: Optional name for index.
+       * preserveNullAndEmptyArrays: Optional
+       *   toggle to unwind null and empty values.
+       */
+      {
+        path: "$joined",
+      },
+  },
+  {
+    $project:
+      /**
+       * specifications: The fields to
+       *   include or exclude.
+       */
+      {
+        customer_id: 1,
+        _id: 0,
+        customer_name: "$joined.customer_name",
+      },
+  },
+  {
+    $sort:
+      /**
+       * Provide any number of field/order pairs.
+       */
+      {
+        customer_id: 1,
+      },
+  },
+  {
+    $group:
+      /**
+       * _id: The id of the group.
+       * fieldN: The first field name.
+       */
+      {
+        _id: "$customer_name",
+      },
+  },
+]

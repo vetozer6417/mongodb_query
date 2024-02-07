@@ -1,0 +1,56 @@
+[
+  {
+    $match:
+      /**
+       * query: The query in MQL.
+       */
+      {
+        order_id: 3,
+      },
+  },
+  {
+    $unwind: {
+      path: "$order_lines",
+    },
+  },
+  {
+    $lookup:
+      /**
+       * from: The target collection.
+       * localField: The local join field.
+       * foreignField: The target join field.
+       * as: The name for the results.
+       * pipeline: Optional pipeline to run on the foreign collection.
+       * let: Optional variables to use in the pipeline field stages.
+       */
+      {
+        from: "PRODUCT",
+        localField: "order_lines.product_id",
+        foreignField: "product_id",
+        as: "result",
+      },
+  },
+  {
+    $unwind: {
+      path: "$result",
+    },
+  },
+  {
+    $group:
+      /**
+       * _id: The id of the group.
+       * fieldN: The first field name.
+       */
+      {
+        _id: "$order_id",
+        total_payment: {
+          $sum: {
+            $multiply: [
+              "$order_lines.ordered_quantity",
+              "$result.product_price",
+            ],
+          },
+        },
+      },
+  },
+]

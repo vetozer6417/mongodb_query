@@ -1,0 +1,55 @@
+[
+  {
+    $lookup: {
+      from: "ORDER",
+      localField: "customer_id",
+      foreignField: "customer_id",
+      as: "result",
+    },
+  },
+  {
+    $match:
+      /**
+       * query: The query in MQL.
+       */
+      {
+        result: {
+          $size: 0,
+        },
+      },
+  },
+  {
+    $group:
+      /**
+       * _id: The id of the group.
+       * fieldN: The first field name.
+       */
+      {
+        _id: "$customer_id",
+        customer_name: {
+          $first: "$customer_name",
+        },
+      },
+  },
+  {
+    $project:
+      /**
+       * specifications: The fields to
+       *   include or exclude.
+       */
+      {
+        customer_id: "$_id",
+        customer_name: "$customer_name",
+        _id: 0,
+      },
+  },
+  {
+    $sort:
+      /**
+       * Provide any number of field/order pairs.
+       */
+      {
+        customer_id: 1,
+      },
+  },
+]
